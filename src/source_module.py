@@ -13,6 +13,7 @@ def transform_image(img_path, image_size = (160, 160)):
     ])
     img = transform(img)
     return img
+
 class SiameseNeuralNetwork(nn.Module):
     def __init__(self, out_features=64, dropout_rate=0.25):
         super(SiameseNeuralNetwork, self).__init__()
