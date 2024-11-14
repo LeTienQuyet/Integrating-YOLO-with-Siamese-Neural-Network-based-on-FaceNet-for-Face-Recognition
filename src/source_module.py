@@ -4,9 +4,30 @@ from PIL import Image
 import torchvision.transforms as transforms
 import torch.nn as nn
 
-def transform_image(img_path, image_size = (160, 160)):
+def face_detection(img, detector):
+    results = detector(img)
+    predictions = results.pandas().xyxy[0]
+
+    if predictions.empty:
+        return None
+
+    best_prediction = predictions.loc[predictions["confidence"].idxmax()]
+    x_min, y_min, x_max, y_max = int(best_prediction["xmin"]), int(best_prediction["ymin"]), int(best_prediction["xmax"]), int(best_prediction["ymax"])
+    return img.crop((x_min, y_min, x_max, y_max))
+
+
+class FaceDectionTransform:
+    def __init__(self, detector):
+        self.detector = detector
+
+    def __call__(self, img):
+        cropped_img = face_detection(img, self.detector)
+        return cropped_img if cropped_img is not None else img
+
+def transform_image(img_path, detector, image_size=(160, 160)):
     img = Image.open(img_path)
     transform = transforms.Compose([
+        FaceDectionTransform(detector),
         transforms.Resize(image_size),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
