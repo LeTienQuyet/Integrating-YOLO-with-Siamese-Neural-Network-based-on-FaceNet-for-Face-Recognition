@@ -24,16 +24,14 @@ class FaceDectionTransform:
         cropped_img = face_detection(img, self.detector)
         return cropped_img if cropped_img is not None else img
 
-def transform_image(img_path, detector, image_size=(160, 160)):
-    img = Image.open(img_path)
+def transform_image(detector, image_size=(160, 160)):
     transform = transforms.Compose([
         FaceDectionTransform(detector),
         transforms.Resize(image_size),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    img = transform(img)
-    return img
+    return transform
 
 class SiameseNeuralNetwork(nn.Module):
     def __init__(self, out_features=64, dropout_rate=0.25):
