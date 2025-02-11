@@ -157,12 +157,12 @@ def train_model(num_epochs, train_dataloader, test_dataloader, model, criterion,
     plt.grid()
     plt.savefig(os.path.join(model_ckpt, "train_eval_loss.png"), dpi=300, bbox_inches='tight')
 
-def main(num_epochs, lr, batch_size, patience, model_ckpt, detector_ckpt, path_save_data):
+def main(num_epochs, lr, batch_size, dropout_rate, patience, model_ckpt, detector_ckpt, path_save_data):
     detector = torch.hub.load("ultralytics/yolov5", "custom", path=detector_ckpt, force_reload=True, verbose=False)
     transform = transform_image(detector)
     train_dataloader, test_dataloader = prepare_data(transform, path_save_data, batch_size)
 
-    model = SiameseNeuralNetwork()
+    model = SiameseNeuralNetwork(dropout_rate=dropout_rate)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     criterion = nn.BCEWithLogitsLoss()
@@ -176,10 +176,11 @@ if __name__ == "__main__":
     parser.add_argument("--num_epochs", type=int, help="Num epochs for training", default=100)
     parser.add_argument("--lr", type=float, help="Learning rate", default=0.1)
     parser.add_argument("--batch_size", type=int, help="Batch size", default=32)
+    parser.add_argument("--dropout_rate", type=float, help="Dropout rate", default=0.5)
     parser.add_argument("--patience", type=int, help="The number of epochs without improvement before stopping training", default=10)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint folder of model save last, best model and ...", default="../checkpoint/model/")
     parser.add_argument("--detector_ckpt", type=str, help="Checkpoint of detector", default="../checkpoint/yolov5n/best.pt")
-    parser.add_argument("--path_save_data", type=str, help="Directory save data", default="../data/")
+    parser.add_argument("--path_data", type=str, help="Directory download/upload data for training", default="../data/")
 
     args = parser.parse_args()
 
@@ -187,8 +188,9 @@ if __name__ == "__main__":
         num_epochs=args.num_epochs,
         lr=args.lr,
         batch_size=args.batch_size,
+        dropout_rate=args.dropout_rate,
         patience=args.patience,
         model_ckpt=args.model_ckpt,
         detector_ckpt=args.detector_ckpt,
-        path_save_data=args.path_save_data
+        path_data=args.path_data
     )

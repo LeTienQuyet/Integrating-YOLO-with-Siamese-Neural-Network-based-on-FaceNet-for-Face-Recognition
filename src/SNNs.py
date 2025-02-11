@@ -2,6 +2,7 @@ from facenet_pytorch import InceptionResnetV1
 
 import torch
 import torch.nn as nn
+
 class SiameseNeuralNetwork(nn.Module):
     def __init__(self, dropout_rate=0.5):
         super(SiameseNeuralNetwork, self).__init__()
