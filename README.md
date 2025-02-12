@@ -1,6 +1,11 @@
 # Integrating YOLO with Siamese Neural Network based on FaceNet for Face Recognition
-This repo utilizes **Siamese Neural Networks (SNNs)** combined with **YOLO** to enhance the effectiveness of face recognition.
+This repo utilizes **Siamese Neural Networks (SNNs) [1]** combined with **YOLO** to enhance the effectiveness of face recognition.
 ![pipeline](./image/pipeline.png)
+## Members
+|      Name             |     Gmail                |
+| :---------------:     | :--------:               |
+| *Tien Quyet Le*       | *21520428@gm.uit.edu.vn*   |
+| *Cong Nguyen Nguyen*  | *21521200@gm.uit.edu.vn*   |
 ## Table of Contents
 * [Table of Contents](#table-of-contents)
 * [Main Modules](#main-modules)
