@@ -11,17 +11,36 @@ import torch
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
+import random
 
 # import pathlib
 # pathlib.PosixPath = pathlib.WindowsPath
 
+def random_brightness(img, factor_range=(0.5, 1.5)):
+    factor = random.uniform(*factor_range)
+    return transforms.functional.adjust_brightness(img, factor)
+
+def random_horizontal_flip(img):
+    if random.random() > 0.5:
+        img = transforms.functional.hflip(img)
+    return img
+
+class CustomTransform:
+    def __init__(self, brightness_range=(0.5, 1.5)):
+        self.brightness_range = brightness_range
+
+    def __call__(self, img):
+        img = random_brightness(img, self.brightness_range)
+        img = random_horizontal_flip(img)
+        return img
+
 class CustomDataset(Dataset):
-    def __init__(self, data, transform=None, image_size=(160, 160)):
+    def __init__(self, data, transform=None, img_size=(160, 160)):
         self.data = data
 
         if transform is None:
             transform = transforms.Compose([
-                transforms.Resize(image_size),
+                transforms.Resize(img_size),
                 transforms.ToTensor()
             ])
         self.transform = transform
@@ -34,12 +53,12 @@ class CustomDataset(Dataset):
         img1, img2 = self.transform(img1), self.transform(img2)
         return img1, img2, label
 
-def prepare_data(transform, path_save_data, batch_size=32):
-    train_data = LFWPairs(root=path_save_data, split="train", image_set="original", download=True)
-    test_data = LFWPairs(root=path_save_data, split="test", image_set="original", download=True)
+def prepare_data(transform_train, transform_test, path_data, batch_size=32):
+    train_data = LFWPairs(root=path_data, split="train", img_set="original", download=True)
+    test_data = LFWPairs(root=path_data, split="test", img_set="original", download=True)
 
-    train_dataset = CustomDataset(train_data, transform=transform)
-    test_dataset = CustomDataset(test_data, transform=transform)
+    train_dataset = CustomDataset(train_data, transform=transform_train)
+    test_dataset = CustomDataset(test_data, transform=transform_test)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
@@ -64,10 +83,20 @@ class FaceDectionTransform:
         cropped_img = face_detection(img, self.detector)
         return cropped_img if cropped_img is not None else img
 
-def transform_image(detector, image_size=(160, 160)):
+def transform_img(detector, img_size=(160, 160)):
     transform = transforms.Compose([
         FaceDectionTransform(detector),
-        transforms.Resize(image_size),
+        transforms.Resize(img_size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    return transform
+
+def transform_img_with_augmentation(detector, img_size=(160, 160)):
+    transform = transforms.Compose([
+        FaceDectionTransform(detector),
+        CustomTransform(brightness_range=(0.8, 1.2)),
+        transforms.Resize(img_size),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
@@ -78,9 +107,9 @@ def eval_model(test_dataloader, model, criterion, optimizer):
 
     total_loss_val = 0
     with torch.no_grad():
-        for (image1, image2, label) in test_dataloader:
-            image1, image2, label = image1.to(device), image2.to(device), label.to(device)
-            output = model(image1, image2)
+        for (img1, img2, label) in test_dataloader:
+            img1, img2, label = img1.to(device), img2.to(device), label.to(device)
+            output = model(img1, img2)
             loss = criterion(output, label)
             total_loss_val += loss.item()
 
@@ -108,11 +137,11 @@ def train_model(num_epochs, train_dataloader, test_dataloader, model, criterion,
         total_loss_train = 0
         progress_bar = tqdm(train_dataloader, desc=f"Epoch {epoch+1}", unit="batch", colour="RED")
 
-        for (image1, image2, label) in progress_bar:
-            image1, image2, label = image1.to(device), image2.to(device), label.to(device)
+        for (img1, img2, label) in progress_bar:
+            img1, img2, label = img1.to(device), img2.to(device), label.to(device)
 
             optimizer.zero_grad()
-            output = model(image1, image2)
+            output = model(img1, img2)
             loss = criterion(output, label)
             loss.backward()
             optimizer.step()
@@ -157,10 +186,12 @@ def train_model(num_epochs, train_dataloader, test_dataloader, model, criterion,
     plt.grid()
     plt.savefig(os.path.join(model_ckpt, "train_eval_loss.png"), dpi=300, bbox_inches='tight')
 
-def main(num_epochs, lr, batch_size, dropout_rate, patience, model_ckpt, detector_ckpt, path_save_data):
+def main(num_epochs, lr, batch_size, is_aug, dropout_rate, patience, model_ckpt, detector_ckpt, path_data):
     detector = torch.hub.load("ultralytics/yolov5", "custom", path=detector_ckpt, force_reload=True, verbose=False)
-    transform = transform_image(detector)
-    train_dataloader, test_dataloader = prepare_data(transform, path_save_data, batch_size)
+    transform_test = transform_img(detector)
+    transform_train = transform_img_with_augmentation(detector) if is_aug else transform_test
+
+    train_dataloader, test_dataloader = prepare_data(transform_train, transform_test, path_data, batch_size)
 
     model = SiameseNeuralNetwork(dropout_rate=dropout_rate)
 
@@ -176,11 +207,12 @@ if __name__ == "__main__":
     parser.add_argument("--num_epochs", type=int, help="Num epochs for training", default=100)
     parser.add_argument("--lr", type=float, help="Learning rate", default=0.1)
     parser.add_argument("--batch_size", type=int, help="Batch size", default=32)
+    parser.add_argument("--is_aug", type=bool, help="Is data augmentation used for training?", default=False)
     parser.add_argument("--dropout_rate", type=float, help="Dropout rate", default=0.5)
     parser.add_argument("--patience", type=int, help="The number of epochs without improvement before stopping training", default=10)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint folder of model save last, best model and ...", default="../checkpoint/model/")
     parser.add_argument("--detector_ckpt", type=str, help="Checkpoint of detector", default="../checkpoint/yolov5n/best.pt")
-    parser.add_argument("--path_data", type=str, help="Directory download/upload data for training", default="../data/")
+    parser.add_argument("--path_data", type=str, help="Directory download/upload data for training", default="../data/lfw-py/")
 
     args = parser.parse_args()
 
@@ -188,6 +220,7 @@ if __name__ == "__main__":
         num_epochs=args.num_epochs,
         lr=args.lr,
         batch_size=args.batch_size,
+        is_aug=args.is_aug,
         dropout_rate=args.dropout_rate,
         patience=args.patience,
         model_ckpt=args.model_ckpt,
