@@ -212,7 +212,7 @@ if __name__ == "__main__":
     parser.add_argument("--patience", type=int, help="The number of epochs without improvement before stopping training", default=10)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint folder of model save last, best model and ...", default="../checkpoint/model/")
     parser.add_argument("--detector_ckpt", type=str, help="Checkpoint of detector", default="../checkpoint/yolov5n/best.pt")
-    parser.add_argument("--path_data", type=str, help="Directory download/upload data for training", default="../data/lfw-py/")
+    parser.add_argument("--path_data", type=str, help="Directory download/upload data for training", default="../data/")
 
     args = parser.parse_args()
 
