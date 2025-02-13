@@ -54,8 +54,8 @@ class CustomDataset(Dataset):
         return img1, img2, label
 
 def prepare_data(transform_train, transform_test, path_data, batch_size=32):
-    train_data = LFWPairs(root=path_data, split="train", img_set="original", download=True)
-    test_data = LFWPairs(root=path_data, split="test", img_set="original", download=True)
+    train_data = LFWPairs(root=path_data, split="train", image_set="original", download=True)
+    test_data = LFWPairs(root=path_data, split="test", image_set="original", download=True)
 
     train_dataset = CustomDataset(train_data, transform=transform_train)
     test_dataset = CustomDataset(test_data, transform=transform_test)
