@@ -1,4 +1,4 @@
-from SNNs import SiameseNeuralNetwork
+from src.SNNs import SiameseNeuralNetwork
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import LFWPairs
