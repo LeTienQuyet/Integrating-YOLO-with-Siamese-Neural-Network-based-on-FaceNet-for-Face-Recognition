@@ -11,6 +11,10 @@ This repo utilizes **Siamese Neural Networks (SNNs) [1]** combined with **YOLO**
 * [Main Modules](#main-modules)
     + [Detector](#detector)
     + [Backbone](#backbone)
+* [Instruction](#instruction)
+    + [Compare 2 Faces](#compare-2-faces)
+    + [Football Player Recognition (To do)](#football-player-recognition-to-do)
+    + [Training](#training)
 * [References](#references)
 ## Main Modules
 ### Detector
@@ -23,6 +27,20 @@ from facenet_pytorch import InceptionResnetV1
 
 model = InceptionResnetV1(pretrained="vggface2")
 ```
+## Instruction
+Install required packages:
+```
+pip install -r requirements.txt
+```
+### Compare 2 Faces
+To determine whether the two faces in the given images belong to the same person, you can use the following command:
+```
+python compare2faces.py --img1_path /path/to/1st/image --img2_path /path/to/2nd/image
+```
+By default, the output will be **Same person !!!** or **Diff person !!!**. To check the probability of whether the two images belong to the same person, you can set `noti = False` in the command above.
+![Example for compare](./image/example_compare.png)
+### Football Player Recognition (To do)
+### Training
 ## References
 [1] Gregory Koch, Richard Zemel, and Ruslan Salakhutdinov. Siamese
 neural networks for one-shot image recognition. In ICML Deep Learning
