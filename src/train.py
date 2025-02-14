@@ -201,13 +201,23 @@ def main(num_epochs, lr, batch_size, is_aug, dropout_rate, patience, model_ckpt,
 
     train_model(num_epochs, train_dataloader, test_dataloader, model, criterion, optimizer, device, model_ckpt, patience)
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hyper-parameters for training")
 
     parser.add_argument("--num_epochs", type=int, help="Num epochs for training", default=100)
     parser.add_argument("--lr", type=float, help="Learning rate", default=0.1)
     parser.add_argument("--batch_size", type=int, help="Batch size", default=32)
-    parser.add_argument("--is_aug", type=bool, help="Is data augmentation used for training?", default=False)
+    parser.add_argument("--is_aug", type=str2bool, nargs="?", const=False, help="Is data augmentation used for training?", default=False)
     parser.add_argument("--dropout_rate", type=float, help="Dropout rate", default=0.5)
     parser.add_argument("--patience", type=int, help="The number of epochs without improvement before stopping training", default=10)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint folder of model save last, best model and ...", default="../checkpoint/model/")

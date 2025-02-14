@@ -52,15 +52,25 @@ def main(img1_path, img2_path, noti, model_ckpt, detector_ckpt, force_reload):
     print(f"Predicted time: {end_time - start_time:.4f}s")
     return result
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hyper-parameters for prediction")
 
     parser.add_argument("--img1_path", type=str, help="Image 1st filename in folder `image`", default="./image/suzy_1.jpg")
     parser.add_argument("--img2_path", type=str, help="Image 2nd filename in folder `image`", default="./image/suzy_2.jpeg")
-    parser.add_argument("--noti", type=bool, help="Notification same/diff person between", default=True)
+    parser.add_argument("--noti", type=str2bool, nargs="?", const=True, help="Notification same/diff person between", default=True)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint of model", default="./checkpoint/model/best_model.pt")
     parser.add_argument("--detector_ckpt", type=str, help="Checkpoint of detector", default="./checkpoint/yolov5n/best.pt")
-    parser.add_argument("--force_reload", type=bool, help="Force reload YOLO", default=False)
+    parser.add_argument("--force_reload", type=str2bool, nargs="?", const=False, help="Force reload YOLO", default=False)
 
     args = parser.parse_args()
 
