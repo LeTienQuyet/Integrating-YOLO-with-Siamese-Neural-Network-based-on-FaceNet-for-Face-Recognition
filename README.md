@@ -33,14 +33,23 @@ Install required packages:
 pip install -r requirements.txt
 ```
 ### Compare 2 Faces
-To determine whether the two faces in the given images belong to the same person, you can use the following command:
+To determine whether the two faces in the provided images belong to the same person, you can use the following command:
 ```
 python compare2faces.py --img1_path /path/to/1st/image --img2_path /path/to/2nd/image
 ```
-By default, the output will be **Same person !!!** or **Diff person !!!**. To check the probability of whether the two images belong to the same person, you can set `noti = False` in the command above.
+By default, the output will display **Same person !!!** or **Diff person !!!**. If you prefer to see the probability score instead of a definitive label, set `noti = False` in the command above.
 ![Example for compare](./image/example_compare.png)
 ### Football Player Recognition (To do)
 ### Training
+Move to `src` and training by:
+```
+python train.py --num_epoch {epochs} \
+                --lr {learning_rate} \
+                --batch_size {batch size} \
+                --is_aug {data augmentation} \
+                --dropout_rate {dropout rate} \
+                --patience {patience} 
+```
 ## References
 [1] Gregory Koch, Richard Zemel, and Ruslan Salakhutdinov. Siamese
 neural networks for one-shot image recognition. In ICML Deep Learning
