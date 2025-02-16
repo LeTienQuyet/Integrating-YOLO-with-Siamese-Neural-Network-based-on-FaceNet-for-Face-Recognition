@@ -18,7 +18,13 @@ def extract_feature(model, img_path, transform):
     feature = model.base_model(img_tensor)
     return feature
 
-def main(img1_path, img2_path, noti, model_ckpt, detector_ckpt, force_reload):
+def main(img1_path, img2_path, threshold, noti, model_ckpt, detector_ckpt, force_reload):
+    if threshold < 0 or threshold > 1:
+        raise argparse.ArgumentError(
+            argument=None,
+            message=f"threshold range [0,1] => get {threshold}."
+        )
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     detector = torch.hub.load("ultralytics/yolov5", "custom", path=detector_ckpt, force_reload=force_reload, verbose=False)
@@ -42,7 +48,7 @@ def main(img1_path, img2_path, noti, model_ckpt, detector_ckpt, force_reload):
     end_time = time.time()
 
     if noti:
-        if result >= 0.62:
+        if result >= threshold:
             print("Same person !!!")
         else:
             print("Diff person !!!")
@@ -67,6 +73,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--img1_path", type=str, help="Image 1st filename in folder `image`", default="./image/suzy_1.jpg")
     parser.add_argument("--img2_path", type=str, help="Image 2nd filename in folder `image`", default="./image/suzy_2.jpeg")
+    parser.add_argument("--threshold", type=float, help="Threshold determines whether they are the same person", default=0.62)
     parser.add_argument("--noti", type=str2bool, nargs="?", const=True, help="Notification same/diff person between", default=True)
     parser.add_argument("--model_ckpt", type=str, help="Checkpoint of model", default="./checkpoint/model/best_model.pt")
     parser.add_argument("--detector_ckpt", type=str, help="Checkpoint of detector", default="./checkpoint/yolov5n/best.pt")
@@ -77,6 +84,7 @@ if __name__ == "__main__":
     result = main(
         img1_path=args.img1_path,
         img2_path=args.img2_path,
+        threshold=args.threshold,
         noti=args.noti,
         model_ckpt=args.model_ckpt,
         detector_ckpt=args.detector_ckpt,
