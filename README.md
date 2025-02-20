@@ -32,6 +32,7 @@ Install required packages:
 ```
 pip install -r requirements.txt
 ```
+Move to `src` to do [Compare 2 Faces](#compare-2-faces) and [Training](#training).
 ### Compare 2 Faces
 To determine whether the two faces in the provided images belong to the same person, you can use the following command:
 ```
@@ -41,7 +42,7 @@ By default, the output will display **Same person !!!** or **Diff person !!!**. 
 ![Example for compare](./image/example_compare.png)
 ### Football Player Recognition (To do)
 ### Training
-Move to `src` and training by:
+Training by:
 ```
 python train.py --num_epoch {epochs} \
                 --lr {learning_rate} \
